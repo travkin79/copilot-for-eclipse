@@ -6,16 +6,19 @@ package com.microsoft.copilot.eclipse.ui.chat;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.MultipleHyperlinkPresenter;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.mylyn.wikitext.markdown.MarkdownLanguage;
-import org.eclipse.mylyn.wikitext.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.parser.css.CssParser;
 import org.eclipse.mylyn.wikitext.ui.viewer.MarkupViewer;
 import org.eclipse.swt.SWT;
@@ -27,6 +30,24 @@ import com.microsoft.copilot.eclipse.ui.CopilotUi;
 import com.microsoft.copilot.eclipse.ui.utils.UiUtils;
 
 class ChatMarkupViewer extends MarkupViewer {
+
+  private static final String HEADER = """
+      <?xml version='1.0' encoding='utf-8' ?>
+      <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      </head>
+      <body>
+      """;
+  private static final String FOOTER = "</body>\n</html>";
+
+  private static  final List<Extension> markdownExtensions = List.of(TablesExtension.create());
+  private static final Parser markdownParser = Parser.builder()
+          .extensions(markdownExtensions)
+          .build();
+  private static final HtmlRenderer renderer = HtmlRenderer.builder()
+          .extensions(markdownExtensions)
+          .build();
 
   public ChatMarkupViewer(Composite parent, int styles) {
     super(parent, null, styles);
@@ -78,17 +99,12 @@ class ChatMarkupViewer extends MarkupViewer {
     }
   }
 
-  // computeHtml(String) is a private method in MarkupViewer, so copy it here.
+  // computeHtml(String) is a private method in MarkupViewer and we have to change its behavior, so we write our own
   private String computeHtml(String markupContent) {
-    StringWriter out = new StringWriter();
-    HtmlDocumentBuilder builder = new HtmlDocumentBuilder(out);
-    builder.setFilterEntityReferences(true);
-
-    getParser().setBuilder(builder);
-    getParser().parse(markupContent);
-    getParser().setBuilder(null);
-
-    String htmlText = out.toString();
-    return htmlText;
+    String escapedMarkup = markupContent
+        .replace("<", "&lt;")
+        .replace(">", "&gt;");
+    String htmlCode = renderer.render(markdownParser.parse(escapedMarkup));
+    return HEADER + htmlCode + FOOTER;
   }
 }
