@@ -113,7 +113,6 @@ The project is a multi-module Maven/Tycho build consisting of OSGi bundles:
 | `com.microsoft.copilot.eclipse.ui.jobs` | Copilot Jobs view integration |
 | `com.microsoft.copilot.eclipse.terminal.api` | Terminal tool API definitions |
 | `com.microsoft.copilot.eclipse.ui.terminal` | Terminal integration (Eclipse 4.37+) |
-| `com.microsoft.copilot.eclipse.ui.terminal.tm` | TM Terminal integration (Eclipse 4.36 and earlier) |
 | `com.microsoft.copilot.eclipse.branding` | Product branding and about dialog |
 | `com.microsoft.copilot.eclipse.core.agent.*` | Platform-specific Copilot language server agent bundles |
 | `com.microsoft.copilot.eclipse.feature` | Eclipse feature definition |
